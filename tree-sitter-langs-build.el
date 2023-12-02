@@ -61,6 +61,14 @@ This used for both compilation and downloading."
      (let* ((tree-sitter-langs--out (current-buffer)))
        ,@body)))
 
+(defun tree-sitter-langs--uname ()
+  (unless (executable-find "uname")
+    (error "Could not find uname (needed to determine BSD flavor)"))
+  (downcase
+   (string-trim-right
+    (shell-command-to-string
+     "uname"))))
+
 ;;; TODO: Use (maybe make) an async library, with a proper event loop, instead
 ;;; of busy-waiting.
 (defun tree-sitter-langs--call (program &rest args)
@@ -243,6 +251,7 @@ infrequent (grammar-only changes). It is different from the version of
     ('darwin "macos")
     ('gnu/linux "linux")
     ('windows-nt "windows")
+    ('berkeley-unix (tree-sitter-langs--uname))
     (_ (error "Unsupported system-type %s" system-type))))
 
 (defconst tree-sitter-langs--suffixes '(".dylib" ".dll" ".so")
@@ -272,6 +281,7 @@ If VERSION and OS are not spcified, use the defaults of
               (pcase os
                 ("windows" "x86_64-pc-windows-msvc")
                 ("linux" "x86_64-unknown-linux-gnu")
+                ("freebsd" "x86_64-unknown-freebsd")
                 ("macos" (if (string-prefix-p "aarch64" system-configuration)
                              "aarch64-apple-darwin"
                            "x86_64-apple-darwin")))
