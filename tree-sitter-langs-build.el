@@ -353,7 +353,7 @@ from the current state of the grammar repo, without cleanup."
                (default-directory (file-name-as-directory (concat dir path))))
           (tree-sitter-langs--call "tree-sitter" "generate")
           (cond
-           ((and (memq system-type '(gnu/linux))
+           ((and (memq system-type '(gnu/linux 'berkeley-unix))
                  (file-exists-p "src/scanner.cc"))
             ;; XXX: Modified from
             ;; https://github.com/tree-sitter/tree-sitter/blob/v0.20.0/cli/loader/src/lib.rs#L351
@@ -386,26 +386,6 @@ from the current state of the grammar repo, without cleanup."
                       "src/parser.c"
                       "-o" (format "%sbin/%s.so" tree-sitter-langs-grammar-dir lang-symbol)
                       "-target" target))))
-           ((memq system-type '(berkeley-unix))
-            (cond
-             ((file-exists-p "src/scanner.cc")
-              (tree-sitter-langs--call
-               "c++" "-shared" "-fPIC" "-fno-exceptions" "-g" "-O2"
-               "-I" "src"
-               "src/scanner.cc" "-xc" "src/parser.c"
-               "-o" (format "%sbin/%s.so" tree-sitter-langs-grammar-dir lang-symbol)))
-             ((file-exists-p "src/scanner.c")
-              (tree-sitter-langs--call
-               "cc" "-shared" "-fPIC" "-g" "-O2"
-               "-I" "src"
-               "src/scanner.c" "src/parser.c"
-               "-o" (format "%sbin/%s.so" tree-sitter-langs-grammar-dir lang-symbol)))
-             (:default
-              (tree-sitter-langs--call
-               "cc" "-shared" "-fPIC" "-g" "-O2"
-               "-I" "src"
-               "src/parser.c"
-               "-o" (format "%sbin/%s.so" tree-sitter-langs-grammar-dir lang-symbol)))))
            (:default (tree-sitter-langs--call "tree-sitter" "test")))))
       ;; Replace underscores with hyphens. Example: c_sharp.
       (let ((default-directory bin-dir))
