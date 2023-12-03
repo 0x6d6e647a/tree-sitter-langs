@@ -69,6 +69,29 @@ This used for both compilation and downloading."
     (shell-command-to-string
      "uname"))))
 
+(defun tree-sitter-langs--rust-target-triple ()
+  (unless (executable-find "rustc")
+    (error "Could not find rustc (needed to determine Rust target)"))
+  (let* ((rustc-cmd "rustc -vV")
+         (output-lines (string-split
+                        (shell-command-to-string rustc-cmd)
+                        "[\n\r]+"))
+         (host-line (seq-find
+                     #'(lambda (s) (string-prefix-p "host: " s))
+                     output-lines)))
+    (cadr (split-string host-line ": "))))
+
+(defun tree-sitter-langs--c-target-triple ()
+  (cond
+   ((executable-find "gcc")
+    (string-trim-right
+     (shell-command-to-string "gcc -dumpmachine")))
+   ((executable-find "clang")
+    (string-trim-right
+     (shell-command-to-string "clang -dumpmachine")))
+   (t
+    (error "Could not find C compiler (needed to determine target)"))))
+
 ;;; TODO: Use (maybe make) an async library, with a proper event loop, instead
 ;;; of busy-waiting.
 (defun tree-sitter-langs--call (program &rest args)
