@@ -250,7 +250,6 @@ infrequent (grammar-only changes). It is different from the version of
   (pcase system-type
     ('darwin "macos")
     ('gnu/linux "linux")
-    ('berkeley-unix "freebsd")
     ('windows-nt "windows")
     ('berkeley-unix (tree-sitter-langs--uname))
     (_ (error "Unsupported system-type %s" system-type))))
